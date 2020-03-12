@@ -13,6 +13,7 @@ void b_write(Adress adr, byte b);
 byte b_read(Adress adr);
 void w_write(Adress adr, word w);
 word w_read(Adress adr);
+void load_file(int argc, char  * argv[]);
 
 void test_mem() {
 	byte b0 = 0x0a;
@@ -32,7 +33,6 @@ void test_mem() {
 
 int main(int argc, char * argv[]) {
 	test_mem();
-	printf("%s", argv[argc]);
 	return 0; 
 }
 
@@ -53,4 +53,15 @@ word w_read(Adress adr){
 	word w = ((word)mem[adr+1]) << 8;
 	w = w | mem[adr];
 	return w;
+}
+
+void load_file(int argc, char  * argv[]) {
+	FILE * fin =  fopen(argv[1], "r");
+	int adr_1;
+	char N;
+	scanf("%d %hhx", &adr_1, &N);
+	for(int i = 0; i < N; i++) {
+		byte k;
+		b_write(adr_1 + i, k);
+	}
 }
