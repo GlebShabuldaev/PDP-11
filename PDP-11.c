@@ -14,6 +14,7 @@ byte b_read(Adress adr);
 void w_write(Adress adr, word w);
 word w_read(Adress adr);
 void load_file();
+void mem_dump(Adress adr, word w);
 
 void test_mem() {
 	byte b0 = 0x0a;
@@ -37,6 +38,7 @@ void test_mem() {
 int main(int argc, char * argv[]) {
 	test_mem();
 	load_file();
+	mem_dump(4, 2);
 	return 0; 
 }
 
@@ -67,22 +69,26 @@ void load_file() {
 			unsigned int k;
 			scanf("%x", &k);
 			b_write(adr_1 + i, k);
-			printf("%x\n", b_read(adr_1 + i));
 		}
 	}
 }
 
-
+void mem_dump(Adress adr, word w) {
+	for(unsigned i = 0; i < w; i += 2) { 
+		printf("%06o : %06o\n", adr + i, w_read(adr + i));
+	}
+}
 /*
 void load_file(int argc, char  * argv[]) {
 	FILE * fin =  fopen(argv[1], "r");
-	int adr_1;
-	char N;
-	scanf("%d %hhx", &adr_1, &N);
-	for(unsigned i = 0; i < N; i++) {
-		byte k;
-		scanf("%hhx", &k);
-		b_write(adr_1 + i, k);
+	unsigned int adr_1;
+	unsigned int N;
+	while(scanf("%x%x", &adr_1, &N) == 2) {
+		for(unsigned i = 0; i < N; i++) {
+			unsigned int k;
+			scanf("%x", &k);
+			b_write(adr_1 + i, k);
+		}
 	}
 }
 */
