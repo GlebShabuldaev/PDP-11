@@ -26,7 +26,7 @@ void run();
 int main(int argc, char * argv[]) {
 	test_mem();
 	load_file();
-	mem_dump(4, 2);
+	//mem_dump(4, 2);
 	run();
 	return 0; 
 }

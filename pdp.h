@@ -9,6 +9,7 @@ typedef struct {
 	word opcode;
 	char * name;
 	void (*do_func) (void);
+	char params;
 } Command;
 
 void b_write(Adress adr, byte b);
