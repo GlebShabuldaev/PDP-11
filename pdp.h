@@ -6,9 +6,12 @@
 #define HAS_DD 1
 #define HAS_NN 4
 #define HAS_R 8
+#define HAS_XX 16
+
 typedef unsigned char byte;
 typedef unsigned short int word;
 typedef word Adress;
+extern int N, Z, C;
 
 
 struct Argument {
@@ -21,7 +24,7 @@ typedef struct {
 	word mask;
 	word opcode;
 	char * name;
-	void (*do_func) (struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r);
+	void (*do_func) (struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx);
 	char params;
 } Command;
 
