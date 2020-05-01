@@ -2,7 +2,7 @@
 #include "pdp.h"
 #include <stdlib.h>
 
-int N, Z = 1, C;
+int N, Z, C;
 void set_NZ(word w){
 	if (w >> 15){
 		N = 1;
@@ -24,9 +24,6 @@ void set_C(word w){
 	else 
 		C = 0;
 }
-
-
-
 
 void do_mov(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	if (dd.adr < 8) {
@@ -55,6 +52,8 @@ void do_movb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned i
 		b_write(dd.adr, ss.val);
 		set_NZ(ss.val);
 	}
+	if (dd.adr == 0177566)
+		printf("%c", display_val);
 };
 
 
@@ -73,11 +72,11 @@ void do_add(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 
 
 void print_reg() {
-	printf("R0:%o R1:%o R2:%o R3:%o \nR4:%o R5:%o R6:%o R7:%o\n", reg[0], reg[1], reg[2], reg[3], reg[4], reg[5], reg[6], reg[7]);
+	trace("R0:%o R1:%o R2:%o R3:%o \nR4:%o R5:%o R6:%o R7:%o\n", reg[0], reg[1], reg[2], reg[3], reg[4], reg[5], reg[6], reg[7]);
 };
 
 void do_halt() {
-	printf("\n------------ halted -------------\n");
+	trace("\n------------ halted -------------\n");
 	print_reg();
 	exit(0);
 };
@@ -117,7 +116,7 @@ void do_tst(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 
 void do_tstb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	if (dd.adr < 8)
-		set_NZ(reg[dd.adr]);
+		set_NZ(reg[dd.adr] << 8);
 	else
 		set_NZ(b_read(dd.adr) << 8);
 };

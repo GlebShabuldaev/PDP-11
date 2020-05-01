@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdarg.h>
+#include <string.h>
 #include "pdp.h"
+
+
+int TRACE = 0;
 
 void test_mem() {
 	byte b0 = 0x0a;
@@ -21,9 +26,27 @@ void test_mem() {
 	assert(w == wres);
 }
 
+void trace(const char * fmt, ...) {
+	if (TRACE == 1){
+		va_list ap;
+		va_start(ap, fmt);
+		vprintf(fmt, ap);
+		va_end(ap);
+	}
+}
+
+void key_check(int argc, char * argv[]){
+	for (int i = 0; i < argc; i++){
+		if (strcmp(argv[i], "-t") == 0)
+			TRACE = 1;
+	}
+}
+
 void run();
 
 int main(int argc, char * argv[]) {
+	display_status = 0x80;
+	key_check(argc, argv);
 	test_mem();
 	load_file();
 	//mem_dump(4, 2);

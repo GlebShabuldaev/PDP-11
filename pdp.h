@@ -1,5 +1,9 @@
 #define pc reg[7]
 #define MEMSIZE (64*1024)
+#define display_status mem[0177564]
+#define display_val mem[0177566]
+#define keyboard_status mem[0177560]
+#define keyboard_val mem[0177562]
 
 #define NO_PARAMS 0
 #define HAS_SS 2
@@ -32,20 +36,11 @@ typedef struct {
 word reg[8];
 byte mem[MEMSIZE];
 
-
 void b_write(Adress adr, byte b);
 byte b_read(Adress adr);
 void w_write(Adress adr, word w);
 word w_read(Adress adr);
 void load_file();
 void mem_dump(Adress adr, word w);
-void do_halt();
-void do_mov();
-void do_add();
-void do_inc();
-void do_incb();
-void do_add();
-void do_movb();
 void print_reg();
-void do_sub();
-void do_clr();
+void trace(const char * fmt, ...);
