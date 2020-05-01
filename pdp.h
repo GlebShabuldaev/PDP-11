@@ -1,4 +1,5 @@
 #define pc reg[7]
+#define sp reg[6]
 #define MEMSIZE (64*1024)
 #define display_status mem[0177564]
 #define display_val mem[0177566]
@@ -16,7 +17,6 @@ typedef unsigned char byte;
 typedef unsigned short int word;
 typedef word Adress;
 extern int N, Z, C;
-
 
 struct Argument {
 	word val;		//

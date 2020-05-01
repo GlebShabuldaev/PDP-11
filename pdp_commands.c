@@ -63,6 +63,11 @@ void do_add(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 		set_NZ(reg[dd.adr]);
 		set_C(reg[dd.adr] >> 1);
 	}
+	else if (dd.adr < 8 && ss.adr > 8){
+		reg[dd.adr] = reg[dd.adr] + ss.val;
+		set_NZ(reg[dd.adr]);
+		set_C(reg[dd.adr] >> 1);
+	}
 	else {
 		w_write(dd.adr, w_read(dd.adr) + w_read(ss.adr));
 		set_NZ(w_read(dd.adr));
@@ -205,6 +210,19 @@ void do_bpl(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 		do_br(dd, ss, nn, r, xx);
 };
 
+void do_jsr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	w_write(sp, reg[r]);
+	sp += 2;
+	reg[r] = pc;
+	pc = dd.adr;
+
+};
+
+void do_rts(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	pc = reg[r];
+	sp -= 2;
+	reg[r] = w_read(sp);
+};
 
 Command cmd[] = {
 	{0170000, 0010000, "mov", do_mov, 0x03},
@@ -231,6 +249,7 @@ Command cmd[] = {
 	{0xFF00, 0x0100, "br", do_br, 0x10},
 	{0xFF00, 0x8600, "bcc",do_bcc, 0x10},
 	{0xFF00, 0x0300, "beq", do_beq, 0x10},
-	{0xFF00, 0x8000, "bpl", do_bpl, 0x10}
-
+	{0xFF00, 0x8000, "bpl", do_bpl, 0x10},
+	{0177000, 0004000, "jsr", do_jsr, 0x09},
+	{0177770, 0000200, "rts", do_rts, 0x08}
 };

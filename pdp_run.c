@@ -30,7 +30,7 @@ struct Argument get_mr(word w1, word w) {
 				if (r == 7)
 					trace("#%o ", res.val);
 				else	
-					trace("(R%o) ", r);
+					trace("(R%o)+ ", r);
 			}
 			else {
 				res.val = b_read(res.adr);
@@ -75,6 +75,7 @@ struct Argument get_mr(word w1, word w) {
 				trace("%o ", res.adr);
 			else
 				trace("%o(R%o) ", x, r); 
+			break;
 		case 7:
 			x = w_read(pc);
 			pc += 2;
@@ -96,13 +97,14 @@ extern Command cmd[];
 void run() {
 	trace("------------ running ------------\n");
 	pc = 01000;
+	sp = 0;
 	struct Argument ss, dd;
 	unsigned int nn, r, xx;
 	while(1) {
 		word w = w_read(pc);
 		trace("%06o: %06o\n", pc, w);
 		pc += 2;
-		for (int i = 0; i < 26; i++) {
+		for (int i = 0; i < 28; i++) {
 			if ((w & cmd[i].mask) == cmd[i].opcode){
 				trace("%s ", cmd[i].name);
 				if (cmd[i].params & HAS_SS)
@@ -110,8 +112,11 @@ void run() {
 				if (cmd[i].params & HAS_DD)
 					dd = get_mr(w, w);
 				if (cmd[i].params & HAS_R){
-					r = (w >> 6) & 1;
-					trace("R%o ", reg[r]);
+					if(cmd[i].opcode == 0000200)
+						r = w & 7;
+					else
+						r = (w >> 6) & 7;
+					trace("R%o ", r);
 				}
 				if (cmd[i].params & HAS_NN) {
 					nn = (w & 077) << 1;
@@ -132,7 +137,7 @@ void run() {
 				print_reg();
 				break;
 			}
-			if (i == 26) 
+			if (i == 28) 
 				trace("nothing\n");
 		}
 	}
