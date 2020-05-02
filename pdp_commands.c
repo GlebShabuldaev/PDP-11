@@ -186,7 +186,7 @@ void do_bpl(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 
 void do_jsr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	w_write(sp, reg[r]);
-	sp += 2;
+	sp -= 2;
 	reg[r] = pc;
 	pc = dd.adr;
 
@@ -194,7 +194,7 @@ void do_jsr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 
 void do_rts(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	pc = reg[r];
-	sp -= 2;
+	sp += 2;
 	reg[r] = w_read(sp);
 };
 
