@@ -33,8 +33,8 @@ typedef struct {
 } Command;
 
 
-word reg[8];
-byte mem[MEMSIZE];
+extern word reg[];
+extern byte mem[];
 
 void b_write(Adress adr, byte b);
 byte b_read(Adress adr);

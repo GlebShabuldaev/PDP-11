@@ -5,6 +5,8 @@
 #include "pdp.h"
 
 
+word reg[8];
+byte mem[MEMSIZE];
 int TRACE = 0;
 
 void test_mem() {
@@ -90,6 +92,7 @@ void mem_dump(Adress adr, word w) {
 		printf("%06o : %06o\n", adr + i, w_read(adr + i));
 	}
 }
+
 /*
 void load_file(int argc, char  * argv[]) {
 	FILE * fin =  fopen(argv[1], "r");
@@ -98,9 +101,10 @@ void load_file(int argc, char  * argv[]) {
 	while(scanf("%x%x", &adr_1, &N) == 2) {
 		for(unsigned i = 0; i < N; i++) {
 			unsigned int k;
-			scanf("%x", &k);
+			fscanf(fin, "%x", &k);
 			b_write(adr_1 + i, k);
 		}
 	}
+	fclose(fin);
 }
 */
