@@ -13,32 +13,14 @@ void set_C(word w){
 }
 
 void do_mov(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8) {
-		reg[dd.adr] = ss.val;
-		set_NZ(ss.val);
-	}
-	else {
-		w_write(dd.adr, ss.val);
-		set_NZ(ss.val);
-	}
+	w_write(dd.adr, ss.val);
+	set_NZ(ss.val);
 };
 
 
 void do_movb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8){
-		if (ss.val >> 7 == 1){
-			reg[dd.adr] = 0xFF00 | ss.val;
-			set_NZ(reg[dd.adr]<<8);
-		}
-		else{
-			reg[dd.adr] = 0x0000 | ss.val;
-			set_NZ(reg[dd.adr]<<8);
-		}
-	}
-	else{
-		b_write(dd.adr, ss.val);
-		set_NZ(ss.val<<8);
-	}
+	b_write(dd.adr, ss.val);
+	set_NZ(ss.val<<8);
 	if (dd.adr == 0177566)
 		printf("%c", display_val);
 };

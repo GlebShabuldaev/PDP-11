@@ -49,7 +49,7 @@ void run();
 int main(int argc, char * argv[]) {
 	display_status = 0x80;
 	key_check(argc, argv);
-	test_mem();
+//	test_mem();
 	load_file();
 	//mem_dump(4, 2);
 	run();
@@ -57,7 +57,14 @@ int main(int argc, char * argv[]) {
 }
 
 void b_write(Adress adr, byte b) { 
-	mem[adr] = b;
+	if (adr < 8){
+		if (b >> 7 == 1)
+			reg[adr] = 0xFF00 | b;
+		else
+			reg[adr] = 0x0000 | b;
+	}
+	else
+		mem[adr] = b;
 }
 
 byte b_read(Adress adr) {
@@ -65,13 +72,24 @@ byte b_read(Adress adr) {
 }
 
 void w_write(Adress adr, word w) {
-	mem[adr] = w;
-	mem[adr + 1] = w >> 8;
+	if (adr < 8) {
+        reg[adr] = w;
+    }
+    else {
+        mem[adr] = w;
+		mem[adr + 1] = w >> 8;
+    }
 }
 
 word w_read(Adress adr) {
-	word w = ((word)mem[adr+1]) << 8;
-	w = w | mem[adr];
+	word w;
+	if (adr < 8) {
+        w = reg[adr];
+    }
+    else {
+		w = ((word)mem[adr+1]) << 8;
+		w = w | mem[adr];
+	}
 	return w;
 }
 
