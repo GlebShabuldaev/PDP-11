@@ -225,5 +225,5 @@ Command cmd[] = {
 	{0xFF00, 0x0300, "beq", do_beq, HAS_XX},
 	{0xFF00, 0x8000, "bpl", do_bpl, HAS_XX},
 	{0177000, 0004000, "jsr", do_jsr, HAS_DD + HAS_R},
-	{0177770, 0000200, "rts", do_rts, HAS_R}
+	{0177770, 0000200, "rts", do_rts, HAS_R1}
 };

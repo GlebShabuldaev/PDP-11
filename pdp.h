@@ -12,6 +12,7 @@
 #define HAS_NN (1 << 2)
 #define HAS_R (1 << 3)
 #define HAS_XX (1 << 4)
+#define HAS_R1 (1 << 5)
 
 typedef unsigned char byte;
 typedef unsigned short int word;

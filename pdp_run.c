@@ -112,11 +112,12 @@ void run() {
 				if (cmd[i].params & HAS_DD)
 					dd = get_mr(w, w);
 				if (cmd[i].params & HAS_R){
-					if(cmd[i].opcode == 0000200)
-						r = w & 7;
-					else
-						r = (w >> 6) & 7;
+					r = (w >> 6) & 7;
 					trace("R%o ", r);
+				}
+				if (cmd[i].params & HAS_R1){
+					r = w & 7;
+					trace("R%o ", r);	
 				}
 				if (cmd[i].params & HAS_NN) {
 					nn = (w & 077) << 1;
@@ -134,7 +135,6 @@ void run() {
 				}				
 				cmd[i].do_func(dd, ss, nn, r, xx);
 				trace("\n");
-				print_reg();
 				break;
 			}
 			if (i == 28) 
