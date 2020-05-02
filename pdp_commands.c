@@ -4,25 +4,12 @@
 
 int N, Z, C;
 void set_NZ(word w){
-	if (w >> 15){
-		N = 1;
-		Z = 0;
-	}
-	else if (w == 0){
-		N = 0;
-		Z = 1;
-	}
-	else{
-		N = 0;
-		Z = 0;
-	}
+	N = (w >> 15) & 1;
+	Z = (w == 0);
 }
 
 void set_C(word w){
-	if (w >> 15)
-		C = 1;
-	else 
-		C = 0;
+	C = (w >> 15) & 1;
 }
 
 void do_mov(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
@@ -41,16 +28,16 @@ void do_movb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned i
 	if (dd.adr < 8){
 		if (ss.val >> 7 == 1){
 			reg[dd.adr] = 0xFF00 | ss.val;
-			set_NZ(reg[dd.adr]);
+			set_NZ(reg[dd.adr]<<8);
 		}
 		else{
 			reg[dd.adr] = 0x0000 | ss.val;
-			set_NZ(reg[dd.adr]);
+			set_NZ(reg[dd.adr]<<8);
 		}
 	}
 	else{
 		b_write(dd.adr, ss.val);
-		set_NZ(ss.val);
+		set_NZ(ss.val<<8);
 	}
 	if (dd.adr == 0177566)
 		printf("%c", display_val);
@@ -105,53 +92,6 @@ void do_sob(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 		pc -= nn;
 };
 
-void do_clr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8)
-		reg[dd.adr] = 0;
-	else
-		w_write(dd.adr, 0);
-};
-
-void do_tst(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8)
-		set_NZ(reg[dd.adr]);
-	else
-		set_NZ(w_read(dd.adr));
-};
-
-void do_tstb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8)
-		set_NZ(reg[dd.adr] << 8);
-	else
-		set_NZ(b_read(dd.adr) << 8);
-};
-
-void do_cmp(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8 && ss.adr < 8){
-		word w = reg[ss.adr] - reg[dd.adr];
-		set_NZ(w);
-		set_C(w >> 1);
-	}
-	else{
-		word w = w_read(ss.adr) - w_read(dd.adr);
-		set_NZ(w);
-		set_C(w >> 1);
-	}
-};
-
-void do_cmpb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8 && ss.adr < 8){
-		byte w = reg[ss.adr] - reg[dd.adr];
-		set_NZ(w << 8);
-		set_C(w << 7);
-	}
-	else{
-		byte w = w_read(ss.adr) - w_read(dd.adr);
-		set_NZ(w << 8);
-		set_C(w << 7);
-	}
-};
-
 void do_ccc(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	N = 0;
 	Z = 0;
@@ -189,6 +129,58 @@ void do_sez(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 };
 
 void do_nop(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+};
+
+void do_clr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (dd.adr < 8)
+		reg[dd.adr] = 0;
+	else
+		w_write(dd.adr, 0);
+	do_clc(dd, ss, nn, r, xx);
+	do_sez(dd, ss, nn, r, xx);
+	do_cln(dd, ss, nn, r, xx);
+};
+
+void do_tst(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (dd.adr < 8)
+		set_NZ(reg[dd.adr]);
+	else
+		set_NZ(w_read(dd.adr));
+	do_clc(dd, ss, nn, r, xx);
+};
+
+void do_tstb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (dd.adr < 8)
+		set_NZ(reg[dd.adr] << 8);
+	else
+		set_NZ(b_read(dd.adr) << 8);
+	do_clc(dd, ss, nn, r, xx);
+};
+
+void do_cmp(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (dd.adr < 8 && ss.adr < 8){
+		word w = reg[ss.adr] - reg[dd.adr];
+		set_NZ(w);
+		set_C(w >> 1);
+	}
+	else{
+		word w = w_read(ss.adr) - w_read(dd.adr);
+		set_NZ(w);
+		set_C(w >> 1);
+	}
+};
+
+void do_cmpb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (dd.adr < 8 && ss.adr < 8){
+		byte w = reg[ss.adr] - reg[dd.adr];
+		set_NZ(w << 8);
+		set_C(w << 7);
+	}
+	else{
+		byte w = w_read(ss.adr) - w_read(dd.adr);
+		set_NZ(w << 8);
+		set_C(w << 7);
+	}
 };
 
 void do_br(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
