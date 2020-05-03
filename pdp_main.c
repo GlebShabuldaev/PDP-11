@@ -7,6 +7,7 @@
 
 word reg[8];
 byte mem[MEMSIZE];
+int bw;
 int TRACE = 0;
 
 void test_mem() {

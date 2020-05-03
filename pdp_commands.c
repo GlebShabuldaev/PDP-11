@@ -4,25 +4,29 @@
 
 int N, Z, C;
 void set_NZ(word w){
-	N = (w >> 15) & 1;
+	if(bw == 0)
+		N = (w >> 15) & 1;
+	else
+		N = (w >> 7) & 1;
 	Z = (w == 0);
 }
 
 void set_C(word w){
-	C = (w >> 15) & 1;
+	if (bw == 0)
+		C = (w >> 15) & 1;
+	else 
+		C = (w >> 7) & 1;
 }
 
 void do_mov(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	w_write(dd.adr, ss.val);
+	if (bw == 0)
+		w_write(dd.adr, ss.val);
+	else {
+		b_write(dd.adr, ss.val);
+		if (dd.adr == 0177566)
+			printf("%c", display_val);	
+	}
 	set_NZ(ss.val);
-};
-
-
-void do_movb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	b_write(dd.adr, ss.val);
-	set_NZ(ss.val<<8);
-	if (dd.adr == 0177566)
-		printf("%c", display_val);
 };
 
 
@@ -59,13 +63,11 @@ void do_halt() {
 void do_inc(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	if (dd.adr < 8)
 		reg[dd.adr] += 1;
-	else
+	else if(bw == 0)
 		w_write(dd.adr, w_read(dd.adr) + 1);
-};
-
-
-void do_incb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	b_write(dd.adr, b_read(dd.adr) + 1);
+	else
+		b_write(dd.adr, b_read(dd.adr) + 1);
+	set_NZ(w_read(dd.adr) + 1);
 };
 
 void do_sob(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
@@ -131,14 +133,6 @@ void do_tst(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 	do_clc(dd, ss, nn, r, xx);
 };
 
-void do_tstb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8)
-		set_NZ(reg[dd.adr] << 8);
-	else
-		set_NZ(b_read(dd.adr) << 8);
-	do_clc(dd, ss, nn, r, xx);
-};
-
 void do_cmp(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	if (dd.adr < 8 && ss.adr < 8){
 		word w = reg[ss.adr] - reg[dd.adr];
@@ -149,19 +143,6 @@ void do_cmp(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 		word w = w_read(ss.adr) - w_read(dd.adr);
 		set_NZ(w);
 		set_C(w >> 1);
-	}
-};
-
-void do_cmpb(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8 && ss.adr < 8){
-		byte w = reg[ss.adr] - reg[dd.adr];
-		set_NZ(w << 8);
-		set_C(w << 7);
-	}
-	else{
-		byte w = w_read(ss.adr) - w_read(dd.adr);
-		set_NZ(w << 8);
-		set_C(w << 7);
 	}
 };
 
@@ -198,19 +179,20 @@ void do_rts(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 	reg[r] = w_read(sp);
 };
 
+void do_unkn(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	printf("UNKNOWN FUNCTION\n");
+	exit(0);
+}
+
 Command cmd[] = {
-	{0170000, 0010000, "mov", do_mov, HAS_SS + HAS_DD},
+	{0070000, 0010000, "mov", do_mov, HAS_SS + HAS_DD},
 	{0170000, 0060000, "add", do_add, HAS_SS + HAS_DD},
 	{0xFFFF, 0000000, "halt", do_halt, NO_PARAMS},
-	{0170000, 0110000, "movb", do_movb, HAS_SS + HAS_DD},
-	{0177700, 0015200, "inc", do_inc, HAS_DD},
-	{0177700, 0115200, "incb", do_incb, HAS_DD},
+	{0077700, 0015200, "inc", do_inc, HAS_DD},
 	{0177000, 0077000, "sob", do_sob, HAS_R + HAS_NN},
 	{0177700, 0005000, "clr", do_clr, HAS_DD},
-	{0177700, 0005700, "tst", do_tst, HAS_DD},
-	{0177700, 0105700, "tstb", do_tstb, HAS_DD},
-	{0170000, 0020000, "cmp", do_cmp, HAS_DD + HAS_SS},
-	{0170000, 0120000, "cmpb", do_cmpb, HAS_DD + HAS_SS},
+	{0077700, 0005700, "tst", do_tst, HAS_DD},
+	{0070000, 0020000, "cmp", do_cmp, HAS_DD + HAS_SS},
 	{0177777, 0000257, "ccc", do_ccc, NO_PARAMS},
 	{0177777, 0000241, "clc", do_clc, NO_PARAMS},
 	{0177777, 0000250, "cln", do_cln, NO_PARAMS},
@@ -225,5 +207,6 @@ Command cmd[] = {
 	{0xFF00, 0x0300, "beq", do_beq, HAS_XX},
 	{0xFF00, 0x8000, "bpl", do_bpl, HAS_XX},
 	{0177000, 0004000, "jsr", do_jsr, HAS_DD + HAS_R},
-	{0177770, 0000200, "rts", do_rts, HAS_R1}
+	{0177770, 0000200, "rts", do_rts, HAS_R1},
+	{0000000, 0000000,"UNKNOWN", do_unkn, NO_PARAMS}
 };

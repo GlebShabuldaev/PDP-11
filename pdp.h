@@ -18,6 +18,7 @@ typedef unsigned char byte;
 typedef unsigned short int word;
 typedef word Adress;
 extern int N, Z, C;
+extern int bw;
 
 struct Argument {
 	word val;		//

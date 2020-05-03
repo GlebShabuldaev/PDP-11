@@ -104,8 +104,10 @@ void run() {
 		word w = w_read(pc);
 		trace("%06o: %06o\n", pc, w);
 		pc += 2;
-		for (int i = 0; i < 28; i++) {
+		int i = 0;
+		while(1){
 			if ((w & cmd[i].mask) == cmd[i].opcode){
+				bw = (w >> 15);
 				trace("%s ", cmd[i].name);
 				if (cmd[i].params & HAS_SS)
 					ss = get_mr(w >> 6, w);
@@ -124,21 +126,17 @@ void run() {
 					trace("LOOP ");
 				}
 				if (cmd[i].params & HAS_XX) {
-					if ((w & 0x00FF) >> 7 == 1) {
+					if ((w & 0x00FF) >> 7 == 1)
 						xx = (w & 0x00FF) - 0400;
-						trace("%d", xx);
-				}
-					else {
+					else
 						xx = w & 0x00FF;
-						trace("%d", xx);
-					}
+					trace("%d", xx);
 				}				
 				cmd[i].do_func(dd, ss, nn, r, xx);
 				trace("\n");
 				break;
 			}
-			if (i == 28) 
-				trace("nothing\n");
+			i++;
 		}
 	}
 }
