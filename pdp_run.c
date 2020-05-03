@@ -3,10 +3,10 @@
 #include "pdp.h"
 
 
-struct Argument get_mr(word w1, word w) {
+struct Argument get_mr(word w) {
 	struct Argument res;
-	unsigned int r = w1 & 7;  			  //номер регистра
-	unsigned int mode = (w1 >> 3) & 7;     //номер моды
+	unsigned int r = w & 7;  			  //номер регистра
+	unsigned int mode = (w >> 3) & 7;     //номер моды
 	int x;
 	switch(mode) {
 		case 0:
@@ -16,7 +16,7 @@ struct Argument get_mr(word w1, word w) {
 			break;
 		case 1:
 			res.adr = reg[r];
-			if (w >> 15 == 0 || r == 7 || r == 6)
+			if (bw == 0 || r == 7 || r == 6)
 				res.val = w_read(res.adr); 				
 			else
 				res.val = b_read(res.adr); 
@@ -24,7 +24,7 @@ struct Argument get_mr(word w1, word w) {
 			break;
 		case 2:
 			res.adr = reg[r];
-			if (w >> 15 == 0 || r == 7 || r == 6) {
+			if (bw == 0 || r == 7 || r == 6) {
 				res.val = w_read(res.adr); 			
 				reg[r] += 2;
 				if (r == 7)
@@ -48,7 +48,7 @@ struct Argument get_mr(word w1, word w) {
 				trace("@(R%o)+ ", r);
 			break;
 		case 4:
-			if (w >> 15 == 0 || r == 6 || r == 7) {
+			if (bw == 0 || r == 6 || r == 7) {
 				reg[r] -= 2;
 				res.adr = reg[r];
 				res.val = w_read(res.adr);
@@ -110,9 +110,9 @@ void run() {
 				bw = (w >> 15);
 				trace("%s ", cmd[i].name);
 				if (cmd[i].params & HAS_SS)
-					ss = get_mr(w >> 6, w);
+					ss = get_mr(w >> 6);
 				if (cmd[i].params & HAS_DD)
-					dd = get_mr(w, w);
+					dd = get_mr(w);
 				if (cmd[i].params & HAS_R){
 					r = (w >> 6) & 7;
 					trace("R%o ", r);
