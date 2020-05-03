@@ -50,8 +50,7 @@ int main(int argc, char * argv[]) {
 	display_status = 0x80;
 	key_check(argc, argv);
 //	test_mem();
-	load_file();
-	//mem_dump(4, 2);
+	load_file(argc, argv);
 	run();
 	return 0; 
 }
@@ -93,30 +92,17 @@ word w_read(Adress adr) {
 	return w;
 }
 
-void load_file() {
-	unsigned int adr_1;
-	unsigned int N;
-	while(scanf("%x%x", &adr_1, &N) == 2) {
-		for(unsigned i = 0; i < N; i++) {
-			unsigned int k;
-			scanf("%x", &k);
-			b_write(adr_1 + i, k);
-		}
-	}
-}
-
 void mem_dump(Adress adr, word w) {
 	for(unsigned i = 0; i < w; i += 2) { 
 		printf("%06o : %06o\n", adr + i, w_read(adr + i));
 	}
 }
 
-/*
 void load_file(int argc, char  * argv[]) {
-	FILE * fin =  fopen(argv[1], "r");
+	FILE * fin =  fopen(argv[argc -1], "rb");
 	unsigned int adr_1;
 	unsigned int N;
-	while(scanf("%x%x", &adr_1, &N) == 2) {
+	while(fscanf(fin, "%x%x", &adr_1, &N) == 2) {
 		for(unsigned i = 0; i < N; i++) {
 			unsigned int k;
 			fscanf(fin, "%x", &k);
@@ -125,4 +111,3 @@ void load_file(int argc, char  * argv[]) {
 	}
 	fclose(fin);
 }
-*/
