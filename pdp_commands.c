@@ -34,17 +34,18 @@ void do_add(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 	if (dd.adr < 8 && ss.adr < 8) {
 		reg[dd.adr] = reg[dd.adr] + reg[ss.adr];
 		set_NZ(reg[dd.adr]);
-		set_C(reg[dd.adr] >> 1);
+		set_C((reg[dd.adr] + reg[ss.adr]) >> 1);
 	}
 	else if (dd.adr < 8 && ss.adr > 8){
 		reg[dd.adr] = reg[dd.adr] + ss.val;
 		set_NZ(reg[dd.adr]);
-		set_C(reg[dd.adr] >> 1);
+		set_C((reg[dd.adr] + ss.val) >> 1);
 	}
 	else {
-		w_write(dd.adr, w_read(dd.adr) + w_read(ss.adr));
-		set_NZ(w_read(dd.adr));
-		set_C(w_read(dd.adr) >> 1);
+		word w = w_read(dd.adr) + w_read(ss.adr);
+		w_write(dd.adr, w);
+		set_NZ(w);
+		set_C((w_read(dd.adr) + w_read(ss.adr)) >> 1);
 	}
 };
 
@@ -126,10 +127,12 @@ void do_clr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 };
 
 void do_tst(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	if (dd.adr < 8)
+	if (dd.adr < 8){
 		set_NZ(reg[dd.adr]);
-	else
+	}
+	else{
 		set_NZ(w_read(dd.adr));
+	}
 	do_clc(dd, ss, nn, r, xx);
 };
 
@@ -137,12 +140,12 @@ void do_cmp(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 	if (dd.adr < 8 && ss.adr < 8){
 		word w = reg[ss.adr] - reg[dd.adr];
 		set_NZ(w);
-		set_C(w >> 1);
+		set_C((reg[ss.adr] - reg[dd.adr]) >> 1);
 	}
 	else{
 		word w = w_read(ss.adr) - w_read(dd.adr);
 		set_NZ(w);
-		set_C(w >> 1);
+		set_C((w_read(ss.adr) - w_read(dd.adr)) >> 1);
 	}
 };
 
@@ -166,8 +169,8 @@ void do_bpl(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 };
 
 void do_jsr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	w_write(sp, reg[r]);
 	sp -= 2;
+	w_write(sp, reg[r]);
 	reg[r] = pc;
 	pc = dd.adr;
 
@@ -175,12 +178,60 @@ void do_jsr(struct Argument dd, struct Argument ss, unsigned int nn, unsigned in
 
 void do_rts(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
 	pc = reg[r];
-	sp += 2;
 	reg[r] = w_read(sp);
+	sp += 2;
 };
 
+void do_asl(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (bw == 0){
+		word w = w_read(dd.adr);
+		w_write(dd.adr, w * 2);	
+		set_NZ(w_read(dd.adr));
+		set_C((w * 2) >> 1);
+	}
+	else{
+		byte w = b_read(dd.adr);
+		b_write(dd.adr, w * 2);	
+		set_NZ(b_read(dd.adr));
+		set_C((w * 2) >> 1);
+	}
+};
+
+void do_rol(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (bw == 0){
+		word w = w_read(dd.adr);
+		word w1 = w;
+		w = (w << 1) | C;
+		set_C(((w1 << 1) | C)>>1);
+		w_write(dd.adr, w);
+		set_NZ(w);
+	}
+	else{
+		byte w = b_read(dd.adr);
+		byte w1 = w;
+		w = (w << 1) | C;
+		set_C(((w1 << 1) | C)>>1);
+		b_write(dd.adr, w);
+		set_NZ(w);
+	}
+};
+
+void do_bic(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
+	if (bw == 0){
+		word w = w_read(dd.adr);
+		w_write(dd.adr, w & (~ss.val));
+		set_NZ(w_read(dd.adr));
+	}
+	else{
+		byte w = b_read(dd.adr);
+		b_write(dd.adr, w & (~ss.val));
+		set_NZ(b_read(dd.adr));	
+	}
+};
+
+
 void do_unkn(struct Argument dd, struct Argument ss, unsigned int nn, unsigned int r, unsigned int xx) {
-	printf("UNKNOWN FUNCTION\n");
+	trace("UNKNOWN FUNCTION\n");
 	exit(0);
 }
 
@@ -188,7 +239,7 @@ Command cmd[] = {
 	{0070000, 0010000, "mov", do_mov, HAS_SS + HAS_DD},
 	{0170000, 0060000, "add", do_add, HAS_SS + HAS_DD},
 	{0xFFFF, 0000000, "halt", do_halt, NO_PARAMS},
-	{0077700, 0015200, "inc", do_inc, HAS_DD},
+	{0077700, 0005200, "inc", do_inc, HAS_DD},
 	{0177000, 0077000, "sob", do_sob, HAS_R + HAS_NN},
 	{0177700, 0005000, "clr", do_clr, HAS_DD},
 	{0077700, 0005700, "tst", do_tst, HAS_DD},
@@ -208,5 +259,8 @@ Command cmd[] = {
 	{0xFF00, 0x8000, "bpl", do_bpl, HAS_XX},
 	{0177000, 0004000, "jsr", do_jsr, HAS_DD + HAS_R},
 	{0177770, 0000200, "rts", do_rts, HAS_R1},
+	{0007700, 0006300, "asl", do_asl, HAS_DD},
+	{0007700, 0006100, "rol", do_rol, HAS_DD},
+	{0070000, 0040000, "bic", do_bic, HAS_DD + HAS_SS},
 	{0000000, 0000000,"UNKNOWN", do_unkn, NO_PARAMS}
 };

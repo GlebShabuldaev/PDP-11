@@ -24,7 +24,12 @@ struct Argument get_mr(word w) {
 			break;
 		case 2:
 			res.adr = reg[r];
-			if (bw == 0 || r == 7 || r == 6) {
+			if (r == 6) {
+				res.val = w_read(res.adr); 			
+				reg[r] += 2;
+				trace("(R%o)+ ", r);
+			}
+			else if (bw == 0 || r == 7) {
 				res.val = w_read(res.adr); 			
 				reg[r] += 2;
 				if (r == 7)
@@ -48,7 +53,12 @@ struct Argument get_mr(word w) {
 				trace("@(R%o)+ ", r);
 			break;
 		case 4:
-			if (bw == 0 || r == 6 || r == 7) {
+			if (r == 6) {
+				reg[r] -= 2;
+				res.adr = reg[r];
+				res.val = w_read(res.adr);
+			}
+			else if (bw == 0 || r == 7) {
 				reg[r] -= 2;
 				res.adr = reg[r];
 				res.val = w_read(res.adr);
@@ -61,9 +71,16 @@ struct Argument get_mr(word w) {
 			trace("-(R%o) ", r);
 			break;
 		case 5:
-			reg[r] -= 2;
-			res.adr = w_read(reg[r]);
-			res.val = w_read(res.adr);
+			if(r == 6){
+				res.adr = w_read(reg[r]);
+				res.val = w_read(res.adr);
+				reg[r] -= 2;
+			}
+			else{
+				reg[r] -= 2;
+				res.adr = w_read(reg[r]);
+				res.val = w_read(res.adr);
+			}	
 			trace("@-(R%o) ", r);
 			break;
 		case 6:
